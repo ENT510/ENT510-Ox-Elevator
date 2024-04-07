@@ -1,4 +1,10 @@
 
+# ENT510 OX ELEVATOR SYSTEM
+
+## Framework
+- Standalone or qbcore
+- ESX
+
 ## Dependency
 
 - Ox Lib: https://github.com/overextended/ox_lib
