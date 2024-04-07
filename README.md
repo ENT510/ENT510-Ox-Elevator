@@ -1,4 +1,6 @@
 
+![image](https://github.com/ENT510/ENT510-Ox-Elevator/assets/145626625/dcba8630-549b-4621-9b04-5e9fd0511faf)
+
 # ENT510 OX ELEVATOR SYSTEM
 
 ## Framework
