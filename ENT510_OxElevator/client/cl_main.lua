@@ -41,6 +41,18 @@ function onlyMenuPlans(k)
             FreezeEntityPosition(enterPed, true)
             SetEntityInvincible(enterPed, true)
             SetBlockingOfNonTemporaryEvents(enterPed, true)
+            if zoneData.Blip.Enabled then
+                local blip = AddBlipForCoord(enterPedPosition.x, enterPedPosition.y, enterPedPosition.z)
+                SetBlipSprite(blip, zoneData.Blip.Sprite)
+                SetBlipDisplay(blip, 4)
+                SetBlipScale(blip, zoneData.Blip.Scale)
+                SetBlipAsShortRange(blip, true)
+                SetBlipColour(blip, zoneData.Blip.Color)
+                BeginTextCommandSetBlipName("STRING")
+                AddTextComponentString(zoneData.Blip.Name)
+                EndTextCommandSetBlipName(blip)
+            end
+            
             exports.ox_target:addLocalEntity(enterPed, {
                 {
                     icon = 'fa-solid fa-building',
@@ -91,11 +103,12 @@ function ShowElevatorMenu(plans)
             iconColor = "#00BFFF"
         end
 
-        local hashKey = GetStreetNameAtCoord(planData.TeleportSpawnEnter.x, planData.TeleportSpawnEnter.y, planData.TeleportSpawnEnter.z)
+        local hashKey = GetStreetNameAtCoord(planData.TeleportSpawnEnter.x, planData.TeleportSpawnEnter.y,
+            planData.TeleportSpawnEnter.z)
         local streetName = GetStreetNameFromHashKey(hashKey)
         local statusTitle = Traduction.MenuStatus
         local streetTitle = Traduction.MenuZone
-        local statusDescription = (planData.UsePasswordPlans and Traduction.BlockedPlan..' '.."🔴" or  Traduction.FreePlan..' '.."🟢")
+        local statusDescription = (planData.UsePasswordPlans and Traduction.BlockedPlan .. ' ' .. "🔴" or Traduction.FreePlan .. ' ' .. "🟢")
         local streetDescription = streetName
         local descriptionDescription = planData.DescriptionPlans
         local ImagePlanes = planData.Image
@@ -111,7 +124,7 @@ function ShowElevatorMenu(plans)
                     local input = lib.inputDialog(Traduction.TitleDialog, {
                         {
                             type = "input",
-                            label = Traduction.EnterPass ,
+                            label = Traduction.EnterPass,
                             password = true,
                             icon = 'lock'
                         },
@@ -119,7 +132,7 @@ function ShowElevatorMenu(plans)
                     if not input then return CamDisbled() end
                     local pass = input[1]
                     if pass == planData.PasswordPlans then
-                        NotifyClient('Success Password' , Traduction.NotifyCorrectPass , 'success' , "fa-solid fa-check")
+                        NotifyClient('Success Password', Traduction.NotifyCorrectPass, 'success', "fa-solid fa-check")
                         CamDisbled()
                         DoScreenFadeOut(1000)
                         Wait(1000)
@@ -130,7 +143,8 @@ function ShowElevatorMenu(plans)
                                     DoScreenFadeIn(1000)
                                     debugging(planData.TeleportSpawnEnter)
                                 end)
-                                NotifyClient(planData.PlansName , Traduction.NotifyCorrectTeleported , 'success' , "fa-solid fa-check")
+                                NotifyClient(planData.PlansName, Traduction.NotifyCorrectTeleported, 'success',
+                                    "fa-solid fa-check")
                                 debugging(Elevator.Framework)
                             end
                         elseif Elevator.Framework == 'qbcore' then
@@ -140,12 +154,14 @@ function ShowElevatorMenu(plans)
                                 SetEntityCoords(PlayerPedId(), planData.TeleportSpawnEnter)
                                 Wait(1000)
                                 DoScreenFadeIn(1000)
-                                NotifyClient(planData.PlansName , Traduction.NotifyCorrectTeleported , 'success' , "fa-solid fa-check")
+                                NotifyClient(planData.PlansName, Traduction.NotifyCorrectTeleported, 'success',
+                                    "fa-solid fa-check")
                             end
                         end
                     else
                         debugging('Wrong password')
-                        NotifyClient('Error Password' , Traduction.NotifyPassWrong , 'error' , "fa-solid fa-triangle-exclamation")
+                        NotifyClient('Error Password', Traduction.NotifyPassWrong, 'error',
+                            "fa-solid fa-triangle-exclamation")
                         CamDisbled()
                     end
                 else
@@ -159,7 +175,8 @@ function ShowElevatorMenu(plans)
                                 Wait(1000)
                                 DoScreenFadeIn(1000)
                                 debugging(planData.TeleportSpawnEnter)
-                                NotifyClient(planData.PlansName , Traduction.NotifyCorrectTeleported , 'success' , "fa-solid fa-check")
+                                NotifyClient(planData.PlansName, Traduction.NotifyCorrectTeleported, 'success',
+                                    "fa-solid fa-check")
                             end)
                             debugging(Elevator.Framework)
                         end
@@ -170,7 +187,8 @@ function ShowElevatorMenu(plans)
                             SetEntityCoords(PlayerPedId(), planData.TeleportSpawnEnter)
                             Wait(1000)
                             DoScreenFadeIn(1000)
-                            NotifyClient(planData.PlansName , Traduction.NotifyCorrectTeleported , 'success' , "fa-solid fa-check")
+                            NotifyClient(planData.PlansName, Traduction.NotifyCorrectTeleported, 'success',
+                                "fa-solid fa-check")
                         end
                     end
                 end
@@ -213,7 +231,8 @@ function ShowElevatorMenuExit(zoneData, k)
                                     Wait(1000)
                                     DoScreenFadeIn(1000)
                                     debugging(Elevator.Framework)
-                                    NotifyClient('Success' , Traduction.NotifyCorrectTeleported , 'success' , "fa-solid fa-check")
+                                    NotifyClient('Success', Traduction.NotifyCorrectTeleported, 'success',
+                                        "fa-solid fa-check")
                                 end)
                             end
                         elseif Elevator.Framework == 'qbcore' then
@@ -223,7 +242,8 @@ function ShowElevatorMenuExit(zoneData, k)
                                 SetEntityCoords(PlayerPedId(), stocazz.TeleportCoordsExit)
                                 Wait(1000)
                                 DoScreenFadeIn(1000)
-                                NotifyClient('Success' , Traduction.NotifyCorrectTeleported , 'success' , "fa-solid fa-check")
+                                NotifyClient('Success', Traduction.NotifyCorrectTeleported, 'success',
+                                    "fa-solid fa-check")
                             end
                         end
                     end
