@@ -17,5 +17,3 @@ function CamDisbled()
     RenderScriptCams(false, true, 1250, 1, 0)
     DestroyCam(camera, false)
 end
-
-

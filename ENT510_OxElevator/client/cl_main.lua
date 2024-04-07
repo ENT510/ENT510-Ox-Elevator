@@ -22,6 +22,9 @@ elseif ESX and Elevator.Framework == 'newEsx' then
     debugging("[^2ESX^7] Framework started and Elevator.Framework is set to '^2newEsx^7' correctly.")
 end
 
+local cooldownPassword = Elevator.TimeCoolDown 
+local isCooldownActive = false
+local lastPasswordAttempt = 0 
 
 
 function onlyMenuPlans(k)
@@ -52,7 +55,7 @@ function onlyMenuPlans(k)
                 AddTextComponentString(zoneData.Blip.Name)
                 EndTextCommandSetBlipName(blip)
             end
-            
+
             exports.ox_target:addLocalEntity(enterPed, {
                 {
                     icon = 'fa-solid fa-building',
@@ -89,6 +92,7 @@ function onlyMenuPlans(k)
     end
 end
 
+
 function ShowElevatorMenu(plans)
     local menuOptions = {}
     for _, planData in ipairs(plans) do
@@ -120,49 +124,71 @@ function ShowElevatorMenu(plans)
             iconColor = iconColor,
             image = ImagePlanes,
             onSelect = function()
+
+        
                 if planData.UsePasswordPlans then
-                    local input = lib.inputDialog(Traduction.TitleDialog, {
-                        {
-                            type = "input",
-                            label = Traduction.EnterPass,
-                            password = true,
-                            icon = 'lock'
-                        },
-                    })
-                    if not input then return CamDisbled() end
-                    local pass = input[1]
-                    if pass == planData.PasswordPlans then
-                        NotifyClient('Success Password', Traduction.NotifyCorrectPass, 'success', "fa-solid fa-check")
-                        CamDisbled()
-                        DoScreenFadeOut(1000)
-                        Wait(1000)
-                        if ESX then
-                            if Elevator.Framework == 'newEsx' then
-                                ESX.Game.Teleport(PlayerPedId(), planData.TeleportSpawnEnter, function()
+                    local item = exports.ox_inventory:Search('count', planData.ItemsCard)
+                    if item >= 1 then
+                        if Elevator.EnableCoolDown then
+                        if isCooldownActive then
+                            NotifyClient('Cooldown Active', Traduction.NotifyCoolDownOn, 'inform', 'fa-solid fa-info-circle')
+                            CamDisbled()
+                            return
+                        end
+                    end
+                        local input = lib.inputDialog(Traduction.TitleDialog, {
+                            {
+                                type = "input",
+                                label = Traduction.EnterPass,
+                                password = true,
+                                icon = 'lock'
+                            },
+                        })
+                        if not input then return CamDisbled() end
+                        local pass = input[1]
+                        if pass == planData.PasswordPlans then
+
+                            NotifyClient('Success Password', Traduction.NotifyCorrectPass, 'success', "fa-solid fa-check")
+                            CamDisbled()
+                            DoScreenFadeOut(1000)
+                            Wait(1000)
+                            if ESX then
+                                if Elevator.Framework == 'newEsx' then
+                                    ESX.Game.Teleport(PlayerPedId(), planData.TeleportSpawnEnter, function()
+                                        Wait(1000)
+                                        DoScreenFadeIn(1000)
+                                        debugging(planData.TeleportSpawnEnter)
+                                    end)
+                                    NotifyClient(planData.PlansName, Traduction.NotifyCorrectTeleported, 'success',
+                                        "fa-solid fa-check")
+                                    debugging(Elevator.Framework)
+                                end
+                            elseif Elevator.Framework == 'qbcore' then
+                                if QBCore then
+                                    debugging('switch qbcore')
+                                    debugging(Elevator.Framework)
+                                    SetEntityCoords(PlayerPedId(), planData.TeleportSpawnEnter)
                                     Wait(1000)
                                     DoScreenFadeIn(1000)
-                                    debugging(planData.TeleportSpawnEnter)
-                                end)
-                                NotifyClient(planData.PlansName, Traduction.NotifyCorrectTeleported, 'success',
-                                    "fa-solid fa-check")
-                                debugging(Elevator.Framework)
+                                    NotifyClient(planData.PlansName, Traduction.NotifyCorrectTeleported, 'success',
+                                        "fa-solid fa-check")
+                                end
                             end
-                        elseif Elevator.Framework == 'qbcore' then
-                            if QBCore then
-                                debugging('switch qbcore')
-                                debugging(Elevator.Framework)
-                                SetEntityCoords(PlayerPedId(), planData.TeleportSpawnEnter)
-                                Wait(1000)
-                                DoScreenFadeIn(1000)
-                                NotifyClient(planData.PlansName, Traduction.NotifyCorrectTeleported, 'success',
-                                    "fa-solid fa-check")
+                        else
+                            debugging('Wrong password')
+                            NotifyClient('Error Password', Traduction.NotifyPassWrong, 'error', "fa-solid fa-triangle-exclamation")
+                            CamDisbled()
+                            isCooldownActive = true
+                            lastPasswordAttempt = GetGameTimer()
+                            if Elevator.EnableCoolDown then
+                                CheckCooldown()
                             end
+                        
                         end
                     else
-                        debugging('Wrong password')
-                        NotifyClient('Error Password', Traduction.NotifyPassWrong, 'error',
-                            "fa-solid fa-triangle-exclamation")
-                        CamDisbled()
+                        debugging('No Item')
+                        local description = string.format(Traduction.NotifyNoItem, planData.ItemsCard)
+                        NotifyClient('Error Access Card', description, 'error', 'fa-solid fa-triangle-exclamation')                        
                     end
                 else
                     CamDisbled()
@@ -268,3 +294,20 @@ for shopName, _ in pairs(Elevator.ElevatorZone) do
     onlyMenuPlans(shopName)
     -- debugging(_)
 end
+
+function CheckCooldown()
+    Citizen.CreateThread(function()
+        while isCooldownActive do
+            Wait(1000) 
+            local elapsedTime = GetGameTimer() - lastPasswordAttempt
+            local remainingTime = cooldownPassword - (elapsedTime / 1000)
+
+            print(remainingTime)
+            if remainingTime <= 0 then
+                isCooldownActive = false
+                NotifyClient('Cooldown Finish', Traduction.NotifyCoolDownFree, 'info', 'fa-solid fa-info-circle')
+            end
+        end
+    end)
+end
+
